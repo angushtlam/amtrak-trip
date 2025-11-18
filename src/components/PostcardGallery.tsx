@@ -90,12 +90,12 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
           const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
           if (isMobile) {
-            // Use getBoundingClientRect and scrollTo for mobile
+            // Use getBoundingClientRect and scroll for mobile
             const rect = selectedWrapper.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const centerY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
 
-            window.scrollTo({
+            window.scroll({
               top: centerY,
               behavior: "smooth",
             });
