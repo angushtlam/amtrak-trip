@@ -38,13 +38,13 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  font-size: 2.5rem;
+  font-size: 5rem;
   line-height: 1;
   cursor: pointer;
   color: #333;
   padding: 0;
-  width: 2rem;
-  height: 2rem;
+  width: 4rem;
+  height: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;

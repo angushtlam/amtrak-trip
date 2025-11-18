@@ -28,6 +28,15 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
     // Disable scrolling when a card is selected
     document.body.style.overflow = "hidden";
 
+    // Handle Escape key to close selected card
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -53,6 +62,7 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
     }
 
     return () => {
+      document.removeEventListener("keydown", handleEscape);
       observer.disconnect();
       document.body.style.overflow = "";
     };
@@ -76,13 +86,39 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
         ) as HTMLElement;
 
         if (selectedWrapper) {
-          selectedWrapper.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "center",
-          });
+          // Check if mobile (max-width: 768px)
+          const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+          if (isMobile) {
+            // Use getBoundingClientRect and scrollTo for mobile
+            const rect = selectedWrapper.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const centerY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
+
+            window.scrollTo({
+              top: centerY,
+              behavior: "smooth",
+            });
+          } else {
+            // Use scrollIntoView for desktop
+            selectedWrapper.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "center",
+            });
+          }
         }
       }, 100);
+    }
+  };
+
+  const handlePostcardKeyDown = (
+    event: React.KeyboardEvent,
+    index: number,
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handlePostcardClick(index);
     }
   };
 
@@ -133,6 +169,10 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
             <div
               className={`postcard ${flippedStates[index] ? "flipped" : ""}`}
               onClick={() => handlePostcardClick(index)}
+              onKeyDown={(e) => handlePostcardKeyDown(e, index)}
+              tabIndex={0}
+              role="button"
+              aria-label={`${postcard.name} postcard`}
             >
               <img
                 src={postcard.front.src}
