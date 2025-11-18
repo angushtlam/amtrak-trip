@@ -167,7 +167,7 @@
   width: 100%;
   color: #ffffff;
   text-align: center;
-  font-size: 24px;
+  font-size: 3rem;
   font-family: "Rubik Mono One", monospace;
   position: absolute;
   z-index: 1;
@@ -175,17 +175,29 @@
   text-shadow: 4px 4px 8px rgba(10, 12, 167, 0.7);
 }
 
+.postcard-wrapper.selected {
+  max-width: min(80vw, 1100px);
+}
+
 .postcard-wrapper.selected .postcard-label {
   display: none;
 }
 
 @media (max-width: 768px) {
+  .postcard-label {
+    font-size: 1.2rem;
+  }
+
+  .postcard-wrapper.selected {
+    max-width: 100%;
+  }
+
   .postcard-wrapper.selected .postcard {
-    transform: rotateX(0deg) rotateZ(90deg);
+    transform: rotateX(0deg) rotateZ(90deg) scale(1.25);
   }
 
   .postcard-wrapper.selected .postcard.flipped {
-    transform: rotateY(180deg) rotateZ(270deg) !important;
+    transform: rotateY(180deg) rotateZ(270deg) scale(1.25) !important;
   }
 
   .postcard-overlay-top-text,
