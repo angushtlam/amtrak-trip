@@ -79,9 +79,10 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
           selectedWrapper.scrollIntoView({
             behavior: "smooth",
             block: "center",
+            inline: "center",
           });
         }
-      }, 50);
+      }, 100);
     }
   };
 
