@@ -15,74 +15,48 @@ interface PostcardGalleryProps {
 export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [flippedStates, setFlippedStates] = useState<boolean[]>(
-    new Array(postcards.length).fill(false)
+    new Array(postcards.length).fill(false),
   );
 
-  const updatePostcardRotations = () => {
-    const viewportHeight = window.innerHeight;
-    const viewportMidHeight = viewportHeight / 2;
+  useEffect(() => {
+    if (selectedIndex === -1) {
+      // Re-enable scrolling
+      document.body.style.overflow = "";
+      return;
+    }
 
-    const postcardElements = document.querySelectorAll(".postcard");
-    const wrapperElements = document.querySelectorAll(".postcard-wrapper");
+    // Disable scrolling when a card is selected
+    document.body.style.overflow = "hidden";
 
-    postcardElements.forEach((postcardEl, index) => {
-      const postcard = postcardEl as HTMLElement;
-      const wrapper = wrapperElements[index] as HTMLElement;
-      const rect = postcard.getBoundingClientRect();
-      const postcardCenter = rect.top + rect.height / 2;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            setSelectedIndex(-1);
+            setFlippedStates((prev) => {
+              const newStates = [...prev];
+              newStates[selectedIndex] = false;
+              return newStates;
+            });
+          }
+        });
+      },
+      { threshold: 0 },
+    );
 
-      // Calculate distance from viewport center
-      const distanceFromCenter = postcardCenter - viewportMidHeight;
+    const selectedWrapper = document.querySelector(
+      `.postcard-wrapper[data-index="${selectedIndex}"]`,
+    );
 
-      // Normalize distance (0 at center, 1 at viewport edge)
-      let normalizedDistance = Math.min(
-        Math.abs(distanceFromCenter) / viewportMidHeight,
-        1
-      );
+    if (selectedWrapper) {
+      observer.observe(selectedWrapper);
+    }
 
-      if (selectedIndex === index) {
-        // Check if card is fully off screen
-        const isFullyOffScreen = rect.bottom > viewportHeight || rect.top < 0;
-
-        if (isFullyOffScreen) {
-          setSelectedIndex(-1);
-          setFlippedStates((prev) => {
-            const newStates = [...prev];
-            newStates[index] = false;
-            return newStates;
-          });
-          return;
-        }
-
-        postcard.style.transform = "rotateX(0deg)";
-        wrapper.style.marginTop = "200px";
-        wrapper.style.marginBottom = "0px";
-      } else {
-        // Reset margin-top and flipped state for non-selected cards
-        wrapper.style.marginTop = "0px";
-
-        // Remove flipped state if card is deselected
-        if (flippedStates[index]) {
-          setFlippedStates((prev) => {
-            const newStates = [...prev];
-            newStates[index] = false;
-            return newStates;
-          });
-        }
-
-        // Calculate rotation (0deg at center, 70deg at max distance)
-        const maxRotation = 20;
-        const rotation = 60 + normalizedDistance * maxRotation;
-
-        // Calculate margin-bottom (-250px at max distance, 0px at center)
-        const maxMargin = -100;
-        const marginBottom = -150 + maxMargin * normalizedDistance;
-        wrapper.style.marginBottom = `${marginBottom}px`;
-
-        postcard.style.transform = `rotateX(${rotation}deg)`;
-      }
-    });
-  };
+    return () => {
+      observer.disconnect();
+      document.body.style.overflow = "";
+    };
+  }, [selectedIndex]);
 
   const handlePostcardClick = (index: number) => {
     if (selectedIndex === index) {
@@ -95,41 +69,21 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
     } else {
       setSelectedIndex(index);
 
-      updatePostcardRotations();
-
       // Scroll to center the selected card
       setTimeout(() => {
-        const postcardElements = document.querySelectorAll(".postcard");
-        const selectedCard = postcardElements[index] as HTMLElement;
+        const selectedWrapper = document.querySelector(
+          `.postcard-wrapper[data-index="${index}"]`,
+        ) as HTMLElement;
 
-        if (selectedCard) {
-          const rect = selectedCard.getBoundingClientRect();
-          const viewportHeight = window.innerHeight;
-          const cardCenter = rect.top + window.scrollY + rect.height / 2;
-          const viewportCenter = viewportHeight / 2;
-          const scrollTarget = cardCenter - viewportCenter;
-
-          window.scrollTo({
-            top: scrollTarget,
+        if (selectedWrapper) {
+          selectedWrapper.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
           });
         }
-      }, 50); // Small delay to allow state update
+      }, 50);
     }
   };
-
-  useEffect(() => {
-    // Initial update
-    updatePostcardRotations();
-
-    // Update on scroll and resize
-    window.addEventListener("scroll", updatePostcardRotations);
-    window.addEventListener("resize", updatePostcardRotations);
-
-    return () => {
-      window.removeEventListener("scroll", updatePostcardRotations);
-      window.removeEventListener("resize", updatePostcardRotations);
-    };
-  }, [selectedIndex]);
 
   const handleClose = () => {
     if (selectedIndex >= 0) {
@@ -145,18 +99,24 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
   return (
     <>
       {selectedIndex >= 0 && (
-        <div className="postcard-overlay">
-          <button
-            className="postcard-overlay-close"
-            onClick={handleClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
-          <div className="postcard-overlay-content">
-            {postcards[selectedIndex].name}
+        <>
+          <div className="postcard-backdrop" onClick={handleClose}></div>
+          <div className="postcard-overlay">
+            <button
+              className="postcard-overlay-close"
+              onClick={handleClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="postcard-overlay-top-text">
+              {postcards[selectedIndex].name}
+            </div>
           </div>
-        </div>
+          <div className="postcard-overlay-bottom-text">
+            Tap postcard to flip!
+          </div>
+        </>
       )}
       <div className="postcard-gallery">
         {postcards.map((postcard, index) => (
@@ -168,6 +128,7 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
             data-index={index}
             style={{ zIndex: postcards.length - index }}
           >
+            <div className="postcard-label">{postcard.name}</div>
             <div
               className={`postcard ${flippedStates[index] ? "flipped" : ""}`}
               onClick={() => handlePostcardClick(index)}

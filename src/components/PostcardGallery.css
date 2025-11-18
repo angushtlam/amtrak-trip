@@ -1,14 +1,34 @@
-.postcard-overlay {
+.postcard-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 1999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.postcard-overlay {
+  position: fixed;
+  display: flex;
+  top: 0;
+  left: 0;
+  right: 0;
   padding: 1.5rem;
   z-index: 2000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideDown 0.3s ease;
+  font-family: "Rubik Mono One", monospace;
 }
 
 .postcard-overlay-close {
@@ -35,13 +55,29 @@
   color: #000;
 }
 
-.postcard-overlay-content {
+.postcard-overlay-top-text {
   max-width: 1400px;
   margin: 0 auto;
   text-align: center;
   font-size: 1.5rem;
   font-weight: 600;
   color: #333;
+}
+
+.postcard-overlay-bottom-text {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  z-index: 2000;
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  font-family: "Rubik Mono One", monospace;
 }
 
 @keyframes slideDown {
@@ -59,20 +95,34 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 50vh;
 }
 
 .postcard-wrapper {
   display: flex;
+  position: relative;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
   width: 100%;
-  max-width: 600px;
+  max-width: min(80vw, 800px);
   perspective: 1000px;
-  transition: margin 0.1s ease;
+  transition:
+    margin 0.3s ease,
+    transform 0.3s ease;
   position: relative;
   pointer-events: none;
+  margin-bottom: max(-25%, -250px);
+}
+
+.postcard-wrapper.selected {
+  z-index: 10000 !important;
+}
+
+.postcard-selected-background {
+  background: hwb(0 0% 0% / 0.726);
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  width: 100vw;
 }
 
 .postcard {
@@ -86,6 +136,10 @@
   pointer-events: auto;
 }
 
+.postcard-wrapper.selected .postcard {
+  transform: rotateX(0deg);
+}
+
 .postcard.flipped {
   transform: rotateY(180deg) !important;
 }
@@ -97,11 +151,45 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   backface-visibility: hidden;
 }
 
 .postcard-back {
   transform: rotateY(180deg);
+}
+
+.postcard-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: #ffffff;
+  text-align: center;
+  font-size: 24px;
+  font-family: "Rubik Mono One", monospace;
+  position: absolute;
+  z-index: 1;
+  word-break: keep-all;
+  text-shadow: 4px 4px 8px rgba(10, 12, 167, 0.7);
+}
+
+.postcard-wrapper.selected .postcard-label {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .postcard-wrapper.selected .postcard {
+    transform: rotateX(0deg) rotateZ(90deg);
+  }
+
+  .postcard-wrapper.selected .postcard.flipped {
+    transform: rotateY(180deg) rotateZ(270deg) !important;
+  }
+
+  .postcard-overlay-top-text,
+  .postcard-overlay-bottom-text {
+    font-size: 1rem;
+  }
 }
