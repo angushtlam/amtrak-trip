@@ -136,6 +136,10 @@
   pointer-events: auto;
 }
 
+.postcard:hover {
+  transform: rotateX(70deg) scale(1.05);
+}
+
 .postcard-wrapper.selected .postcard {
   transform: rotateX(0deg);
 }
