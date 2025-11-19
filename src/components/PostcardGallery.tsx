@@ -19,14 +19,6 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
   );
 
   useEffect(() => {
-    if (selectedIndex === -1) {
-      // Re-enable scrolling
-      document.body.style.overflow = "";
-      return;
-    }
-
-    // Disable scrolling when a card is selected
-    document.body.style.overflow = "hidden";
 
     // Handle Escape key to close selected card
     const handleEscape = (event: KeyboardEvent) => {
@@ -64,7 +56,6 @@ export default function PostcardGallery({ postcards }: PostcardGalleryProps) {
     return () => {
       document.removeEventListener("keydown", handleEscape);
       observer.disconnect();
-      document.body.style.overflow = "";
     };
   }, [selectedIndex]);
 
